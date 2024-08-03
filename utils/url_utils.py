@@ -4,7 +4,7 @@ from urllib import parse
 
 import requests
 
-logger = logging.getLogger(__name__)
+from robocorp import log
 
 
 def extract_hostname_from_url(rawurl):
@@ -41,7 +41,7 @@ def download_image(url, save_path):
     try:
         response = requests.get(url)
     except requests.exceptions.MissingSchema:
-        logger.info(f'Failed to retrieve {url=}.')
+        log.info(f'Failed to retrieve {url=}.')
     else:
         if response.status_code == 200:
             content_type = response.headers['Content-Type']
@@ -53,12 +53,12 @@ def download_image(url, save_path):
             elif 'image/webp' in content_type:
                 extension = 'webp'
             else:
-                logger.info('Unsupported image format:', content_type)
+                log.info('Unsupported image format:', content_type)
                 return
 
             # Save the image with the appropriate extension
             with open(f"{save_path}.{extension}", 'wb') as file:
                 file.write(response.content)
-            logger.info(f"Image saved as {save_path}.{extension}")
+            log.info(f"Image saved as {save_path}.{extension}")
         else:
-            logger.info('Failed to retrieve image.')
+            log.info('Failed to retrieve image.')

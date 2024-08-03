@@ -8,7 +8,7 @@ from datetime import date
 from src.parsers import News
 from utils.date_utils import get_month_date
 
-logger = logging.getLogger(__name__)
+from robocorp import log
 
 
 @task
@@ -30,7 +30,7 @@ def web_scraper_news() -> None:
 
         generate_and_export_csv(obj_news)
     except Exception as e:
-        logger.info(str(e))
+        log.info(str(e))
     finally:
         browser.context().close()
         browser.browser().close()
@@ -46,7 +46,7 @@ def generate_and_export_csv(obj_news):
     )
 
     csv_file = f"output/news-ap-news-{date.today()}.csv"
-    logger.info(f"### Saving to the CSV file: {csv_file}")
+    log.info(f"### Saving to the CSV file: {csv_file}")
     with open(csv_file, mode="w") as csv:
         csv.writelines([line + "\n" for line in csv_content])
-    logger.info("### Done!")
+    log.info("### Done!")

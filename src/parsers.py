@@ -7,6 +7,7 @@ import textwrap
 from typing import Iterable, NoReturn
 
 from robocorp import browser
+from robocorp import log
 from RPA.HTTP import HTTP
 
 from utils.date_utils import is_datetime_in_interval, parse_string_date
@@ -14,7 +15,6 @@ from utils.string_utils import get_extension_from_url_file, clean_text, is_image
 from utils.url_utils import extract_hostname_from_url, currency_in_text, download_image
 
 http = HTTP()
-logger = logging.getLogger(__name__)
 DOWNLOADED_IMAGES_PATH = "output/"
 
 
@@ -41,7 +41,7 @@ class Item:
 
     def download_image(self):
         """ Download image of the new in output/"""
-        logger.info(f'Downloading image from News # {self.uuid}...')
+        log.info(f'Downloading image from News # {self.uuid}...')
         ext = get_extension_from_url_file(self.image_url)
 
         if not is_image_extension(ext):
@@ -54,10 +54,10 @@ class Item:
                 target_file=image_name,
                 overwrite=True,
             )
-            logger.info(f'Image saved as {image_name}')
+            log.info(f'Image saved as {image_name}')
             self.image_name = image_name
         except OSError as e:
-            logger.info(f'It was not possible download image for News # {self.uuid}: {str(e)}')
+            log.info(f'It was not possible download image for News # {self.uuid}: {str(e)}')
 
 
 class News:
@@ -89,24 +89,24 @@ class News:
         pattern = r'(p=)(\d+)'
         new_url = re.sub(pattern, lambda m: f'{m.group(1)}{int(m.group(2)) + 1}', current_url)
         try:
-            logger.info(f'From {current_url=} to {new_url=}')
+            log.info(f'From {current_url=} to {new_url=}')
             self.page.goto(new_url, timeout=30000)
             self.page.wait_for_load_state()
         except Exception as e:
-            logger.info(e)
+            log.info(e)
 
     def is_page_available(self):
         """ If page has results, so it means is able to be scrapped."""
         try:
-            logger.info('Checking if there are results in current page')
+            log.info('Checking if there are results in current page')
             main = self.page.locator('main.SearchResultsModule-main')
             results = main.locator('div.SearchResultsModule-results')
             results.locator('div.PageList-items-item')
         except Exception:
-            logger.info('There is no results in in current page')
+            log.info('There is no results in in current page')
             return False
         else:
-            logger.info('There are results in current page')
+            log.info('There are results in current page')
             return True
 
     def _build_url_search(self, category, query) -> str:
@@ -132,11 +132,11 @@ class News:
         for _ in range(attempts):
             try:
                 self.page = browser.page()
-                logger.info(f'Fetching url {url}')
+                log.info(f'Fetching url {url}')
                 self.page.goto(url)
                 self.page.wait_for_load_state()
             except Exception as e:
-                logger.info(f'Error fetching url {url!r}: {str(e)}')
+                log.info(f'Error fetching url {url!r}: {str(e)}')
             else:
                 return url
 
@@ -178,9 +178,9 @@ class News:
                     link_images[0] if link_images else '',
                     parse_string_date(date_of_news)
                 )
-                logger.info(f"News scrapped: {item}")
+                log.info(f"News scrapped: {item}")
             except Exception as e:
-                logger.info(f'Error locating element: {str(e)}')
+                log.info(f'Error locating element: {str(e)}')
             else:
                 if is_datetime_in_interval(item.publish_date, *interval_limit):
                     self.news.append(item)
