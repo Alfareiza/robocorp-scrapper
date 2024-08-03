@@ -44,10 +44,11 @@ class Item:
         log.info(f'Downloading image from News # {self.uuid}...')
         ext = get_extension_from_url_file(self.image_url)
 
+        image_name = f"{DOWNLOADED_IMAGES_PATH}{self.uuid}.{ext}"
         if not is_image_extension(ext):
-            download_image(self.image_url, f"{DOWNLOADED_IMAGES_PATH}/{self.uuid})")
+            image_name = download_image(self.image_url, f"{DOWNLOADED_IMAGES_PATH}{self.uuid}")
 
-        image_name = f"{DOWNLOADED_IMAGES_PATH}/{self.uuid}.{ext}"
+        image_name = image_name.split('/')[-1]
         try:
             http.download(
                 url=self.image_url,

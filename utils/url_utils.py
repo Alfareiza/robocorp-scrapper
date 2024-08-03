@@ -36,29 +36,35 @@ def currency_in_text(text: str) -> bool:
     return bool(re.fullmatch(pattern, text))
 
 
-def download_image(url, save_path):
+def download_image(url, save_path) -> str:
     """ Download an image when is not clear their type. """
     try:
         response = requests.get(url)
-    except requests.exceptions.MissingSchema:
+    except requests.exceptions.MissingSchema as e:
         log.info(f'Failed to retrieve {url=}.')
+        raise
     else:
-        if response.status_code == 200:
-            content_type = response.headers['Content-Type']
+        return extract_image_from_response(response, save_path)
 
-            if 'image/jpeg' in content_type:
-                extension = 'jpg'
-            elif 'image/png' in content_type:
-                extension = 'png'
-            elif 'image/webp' in content_type:
-                extension = 'webp'
-            else:
-                log.info('Unsupported image format:', content_type)
-                return
 
-            # Save the image with the appropriate extension
-            with open(f"{save_path}.{extension}", 'wb') as file:
-                file.write(response.content)
-            log.info(f"Image saved as {save_path}.{extension}")
-        else:
-            log.info('Failed to retrieve image.')
+def extract_image_from_response(response, save_path) -> str:
+    """ Given a response from a recent fetch URL, extract
+    the Image and return a formatted name with extension """
+    if response.status_code != 200:
+        raise Exception('Failed to retrieve image.')
+    content_type = response.headers['Content-Type']
+
+    if 'image/jpeg' in content_type:
+        extension = 'jpg'
+    elif 'image/png' in content_type:
+        extension = 'png'
+    elif 'image/webp' in content_type:
+        extension = 'webp'
+    else:
+        raise Exception(f'Unsupported image format: {content_type}')
+
+    # Save the image with the appropriate extension
+    with open(f"{save_path}.{extension}", 'wb') as file:
+        file.write(response.content)
+    log.info(f"Image saved as {save_path}.{extension}")
+    return f"{save_path}.{extension}"
