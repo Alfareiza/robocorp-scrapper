@@ -1,8 +1,10 @@
-import datetime
+import logging
 import re
 from urllib import parse
-from datetime import datetime, timedelta
 
+import requests
+
+logger = logging.getLogger(__name__)
 
 
 def extract_hostname_from_url(rawurl):
@@ -13,7 +15,6 @@ def extract_hostname_from_url(rawurl):
         rawurl = f"http://{rawurl}"
 
     return parse.urlparse(rawurl).hostname.replace("www.", "")
-
 
 
 def currency_in_text(text: str) -> bool:
@@ -35,3 +36,29 @@ def currency_in_text(text: str) -> bool:
     return bool(re.fullmatch(pattern, text))
 
 
+def download_image(url, save_path):
+    """ Download an image when is not clear their type. """
+    try:
+        response = requests.get(url)
+    except requests.exceptions.MissingSchema:
+        logger.info(f'Failed to retrieve {url=}.')
+    else:
+        if response.status_code == 200:
+            content_type = response.headers['Content-Type']
+
+            if 'image/jpeg' in content_type:
+                extension = 'jpg'
+            elif 'image/png' in content_type:
+                extension = 'png'
+            elif 'image/webp' in content_type:
+                extension = 'webp'
+            else:
+                logger.info('Unsupported image format:', content_type)
+                return
+
+            # Save the image with the appropriate extension
+            with open(f"{save_path}.{extension}", 'wb') as file:
+                file.write(response.content)
+            logger.info(f"Image saved as {save_path}.{extension}")
+        else:
+            logger.info('Failed to retrieve image.')

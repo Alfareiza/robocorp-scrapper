@@ -11,7 +11,7 @@ from RPA.HTTP import HTTP
 
 from utils.date_utils import is_datetime_in_interval, parse_string_date
 from utils.string_utils import get_extension_from_url_file, clean_text, is_image_extension
-from utils.url_utils import extract_hostname_from_url, currency_in_text
+from utils.url_utils import extract_hostname_from_url, currency_in_text, download_image
 
 http = HTTP()
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ DOWNLOADED_IMAGES_PATH = "output/"
 
 class Item:
     """
-    Parse information about a single news.
+    Parse information related to a single news.
     """
 
     def __init__(self, title, link, description, image, publish_date):
@@ -40,11 +40,13 @@ class Item:
         return currency_in_text(self.title) or currency_in_text(self.description)
 
     def download_image(self):
+        """ Download image of the new in output/"""
         logger.info(f'Downloading image from News # {self.uuid}...')
         ext = get_extension_from_url_file(self.image_url)
+
         if not is_image_extension(ext):
-            logger.info(f'Extension not detected in {self.image_url}')
-            return
+            download_image(self.image_url, f"{DOWNLOADED_IMAGES_PATH}/{self.uuid})")
+
         image_name = f"{DOWNLOADED_IMAGES_PATH}/{self.uuid}.{ext}"
         try:
             http.download(
@@ -52,7 +54,7 @@ class Item:
                 target_file=image_name,
                 overwrite=True,
             )
-            logger.info(f'Image downloaded from News # {self.uuid}...')
+            logger.info(f'Image saved as {image_name}')
             self.image_name = image_name
         except OSError as e:
             logger.info(f'It was not possible download image for News # {self.uuid}: {str(e)}')
@@ -76,16 +78,10 @@ class News:
     def domain(self):
         return extract_hostname_from_url(self.base_url)
 
-    def add_news(self, news: [Iterable]) -> NoReturn:
-        ...
-
-    def news_as_json(self):
-        ...
-
     def close_modal(self):
         try:
             self.page.click('a[title="Close"].fancybox-item.fancybox-close')
-        except Exception:
+        except Exception as e:
             ...
 
     def next_page(self, current_url):
@@ -100,6 +96,7 @@ class News:
             logger.info(e)
 
     def is_page_available(self):
+        """ If page has results, so it means is able to be scrapped."""
         try:
             logger.info('Checking if there are results in current page')
             main = self.page.locator('main.SearchResultsModule-main')
