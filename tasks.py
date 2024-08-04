@@ -28,7 +28,7 @@ def web_scraper_news() -> None:
 
         generate_and_export_csv(obj_news)
     except Exception as e:
-        log.info(str(e))
+        print(str(e))
     finally:
         browser.context().close()
         browser.browser().close()
@@ -44,7 +44,7 @@ def generate_and_export_csv(obj_news):
     )
 
     csv_file = f"output/ap_news_{date.today():%d_%m_%y}.csv"
-    log.info(f"### Saving to the CSV file: {csv_file}")
+    print(f"### Saving to the CSV file: {csv_file}")
     with open(csv_file, mode="w") as csv:
         csv.writelines([line + "\n" for line in csv_content])
-    log.info("### Done!")
+    print("### Done!")

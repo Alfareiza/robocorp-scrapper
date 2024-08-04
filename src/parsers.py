@@ -41,12 +41,12 @@ class Item:
 
     def download_image(self):
         """ Download image of the new in output/"""
-        log.info(f'Downloading image from News # {self.uuid}...')
+        print(f'Downloading image from News # {self.uuid}...')
         ext = get_extension_from_url_file(self.image_url)
         try:
             self.perform_download_image(ext)
         except Exception as e:
-            log.info(f'It was not possible download image for News # {self.uuid}: {str(e)}')
+            print(f'It was not possible download image for News # {self.uuid}: {str(e)}')
 
     def perform_download_image(self, ext):
         """ Try two mechanism for download the image """
@@ -56,7 +56,7 @@ class Item:
             image_name = download_image(self.image_url, path_to_store_img).split('/')[-1]
         else:
             http.download(url=self.image_url, target_file=f"{path_to_store_img}.{ext}", overwrite=True)
-        log.info(f'Image saved as {image_name}')
+        print(f'Image saved as {image_name}')
         self.image_name = image_name
 
 
@@ -89,24 +89,24 @@ class News:
         pattern = r'(p=)(\d+)'
         new_url = re.sub(pattern, lambda m: f'{m.group(1)}{int(m.group(2)) + 1}', current_url)
         try:
-            log.info(f'From {current_url=} to {new_url=}')
+            print(f'From {current_url=} to {new_url=}')
             self.page.goto(new_url, timeout=30000)
             self.page.wait_for_load_state()
         except Exception as e:
-            log.info(e)
+            print(e)
 
     def is_page_available(self):
         """ If page has results, so it means is able to be scrapped."""
         try:
-            log.info('Checking if there are results in current page')
+            print('Checking if there are results in current page')
             main = self.page.locator('main.SearchResultsModule-main')
             results = main.locator('div.SearchResultsModule-results')
             results.locator('div.PageList-items-item')
         except Exception:
-            log.info('There is no results in in current page')
+            print('There is no results in in current page')
             return False
         else:
-            log.info('There are results in current page')
+            print('There are results in current page')
             return True
 
     def _build_url_search(self, category, query) -> str:
@@ -132,11 +132,11 @@ class News:
         for _ in range(attempts):
             try:
                 self.page = browser.page()
-                log.info(f'Fetching url {url}')
+                print(f'Fetching url {url}')
                 self.page.goto(url)
                 self.page.wait_for_load_state()
             except Exception as e:
-                log.info(f'Error fetching url {url!r}: {str(e)}')
+                print(f'Error fetching url {url!r}: {str(e)}')
             else:
                 return url
 
@@ -178,9 +178,9 @@ class News:
                     link_images[0] if link_images else '',
                     parse_string_date(date_of_news)
                 )
-                log.info(f"News scrapped: {item}")
+                print(f"News scrapped: {item}")
             except Exception as e:
-                log.info(f'Error locating element: {str(e)}')
+                print(f'Error locating element: {str(e)}')
             else:
                 if is_datetime_in_interval(item.publish_date, *interval_limit):
                     self.news.append(item)

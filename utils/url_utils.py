@@ -20,7 +20,7 @@ def download_image(url, save_path) -> str:
     try:
         response = requests.get(url)
     except requests.exceptions.MissingSchema as e:
-        log.info(f'Failed to retrieve {url=}.')
+        print(f'Failed to retrieve {url=}.')
         raise
     else:
         return extract_image_from_response(response, save_path)
@@ -46,5 +46,5 @@ def extract_image_from_response(response, save_path) -> str:
     with open(f"{save_path}.{extension}", 'wb') as file:
         file.write(response.content)
 
-    log.info(f"Image saved as {save_path}.{extension}")
+    print(f"Image saved as {save_path}.{extension}")
     return f"{save_path}.{extension}"
