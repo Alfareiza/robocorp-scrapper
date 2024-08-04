@@ -1,9 +1,7 @@
-import logging
+from datetime import date
 
 from robocorp import browser, workitems
 from robocorp.tasks import task
-
-from datetime import date
 
 from src.parsers import News
 from utils.date_utils import get_month_date
@@ -39,13 +37,13 @@ def web_scraper_news() -> None:
 def generate_and_export_csv(obj_news):
     """ Generate and export csv in outout folder """
 
-    csv_content = ["Index,Date,Title,Description,ImageFileName,CurrencyInNews"]
+    csv_content = ["Index;Date;Title;Description;ImageFileName;CurrencyInNews;LinkNews"]
     csv_content.extend(
-        f"{index},{item.publish_date},{item.title},{item.description},{item.image_name},{item.currency_in_title_or_desc}"
-        for index, item in enumerate(obj_news.news)
+        f"{index};{item.publish_date:%D};{item.title};{item.description};{item.image_name};{item.currency_in_title_or_desc};{item.link}"
+        for index, item in enumerate(obj_news.news, 1)
     )
 
-    csv_file = f"output/news-ap-news-{date.today()}.csv"
+    csv_file = f"output/ap_news_{date.today():%d_%m_%y}.csv"
     log.info(f"### Saving to the CSV file: {csv_file}")
     with open(csv_file, mode="w") as csv:
         csv.writelines([line + "\n" for line in csv_content])

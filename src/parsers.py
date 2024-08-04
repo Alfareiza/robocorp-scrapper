@@ -11,8 +11,8 @@ from robocorp import log
 from RPA.HTTP import HTTP
 
 from utils.date_utils import is_datetime_in_interval, parse_string_date
-from utils.string_utils import get_extension_from_url_file, clean_text, is_image_extension
-from utils.url_utils import extract_hostname_from_url, currency_in_text, download_image
+from utils.string_utils import get_extension_from_url_file, clean_text, is_image_extension, currency_in_text
+from utils.url_utils import extract_hostname_from_url, download_image
 
 http = HTTP()
 DOWNLOADED_IMAGES_PATH = "output/"
@@ -43,22 +43,21 @@ class Item:
         """ Download image of the new in output/"""
         log.info(f'Downloading image from News # {self.uuid}...')
         ext = get_extension_from_url_file(self.image_url)
-
-        image_name = f"{DOWNLOADED_IMAGES_PATH}{self.uuid}.{ext}"
-        if not is_image_extension(ext):
-            image_name = download_image(self.image_url, f"{DOWNLOADED_IMAGES_PATH}{self.uuid}")
-
-        image_name = image_name.split('/')[-1]
         try:
-            http.download(
-                url=self.image_url,
-                target_file=image_name,
-                overwrite=True,
-            )
-            log.info(f'Image saved as {image_name}')
-            self.image_name = image_name
-        except OSError as e:
+            self.perform_download_image(ext)
+        except Exception as e:
             log.info(f'It was not possible download image for News # {self.uuid}: {str(e)}')
+
+    def perform_download_image(self, ext):
+        """ Try two mechanism for download the image """
+        path_to_store_img = f"{DOWNLOADED_IMAGES_PATH}{self.uuid}"
+        image_name = path_to_store_img.split('/')[-1]
+        if not is_image_extension(ext):
+            image_name = download_image(self.image_url, path_to_store_img).split('/')[-1]
+        else:
+            http.download(url=self.image_url, target_file=f"{path_to_store_img}.{ext}", overwrite=True)
+        log.info(f'Image saved as {image_name}')
+        self.image_name = image_name
 
 
 class News:
