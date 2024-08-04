@@ -1,5 +1,3 @@
-import logging
-import re
 from urllib import parse
 
 import requests
@@ -15,25 +13,6 @@ def extract_hostname_from_url(rawurl):
         rawurl = f"http://{rawurl}"
 
     return parse.urlparse(rawurl).hostname.replace("www.", "")
-
-
-def currency_in_text(text: str) -> bool:
-    """
-    >>> currency_in_text('$11.1')
-    True
-    >>> currency_in_text('$111,111.11')
-    True
-    >>> currency_in_text('11 dollars')
-    True
-    >>> currency_in_text('11 USD')
-    True
-    >>> currency_in_text('')
-    False
-    >>> currency_in_text(' ')
-    False
-    """
-    pattern = r'^\$[0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?$|^\d+(?:\.\d{1,2})? (dollars|USD|EUR)$'
-    return bool(re.fullmatch(pattern, text))
 
 
 def download_image(url, save_path) -> str:
@@ -66,5 +45,6 @@ def extract_image_from_response(response, save_path) -> str:
     # Save the image with the appropriate extension
     with open(f"{save_path}.{extension}", 'wb') as file:
         file.write(response.content)
+
     log.info(f"Image saved as {save_path}.{extension}")
     return f"{save_path}.{extension}"
